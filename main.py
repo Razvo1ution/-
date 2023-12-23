@@ -1,73 +1,77 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QTableWidget, QTableWidgetItem
-from qt_material import apply_stylesheet
-import sqlite3
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QListWidget
 
-class DatabaseApp(QMainWindow):
-    def __init__(self, db_file):
+class OrderWindow(QMainWindow):
+    def __init__(self):
         super().__init__()
-        self.db_file = db_file
-        self.initUI()
+        self.setWindowTitle("Список заказов")
+        self.setGeometry(630, 315, 640, 480)
 
-    def initUI(self):
-        self.setWindowTitle('Пример работы с базой данных')
-        self.setGeometry(100, 100, 600, 400)
+        # Создаем виджеты
+        self.search_label = QLabel("Поиск:")
+        self.search_box = QLineEdit()
+        self.search_button = QPushButton("Найти")
+        self.order_list = QListWidget()
+        self.drivers_button = QPushButton("Водители")
+        self.orders_button = QPushButton("Заказы")
+        self.history_button = QPushButton("История заказов")
 
-        layout = QVBoxLayout()
+        # Создаем главный виджет и компонуем его
+        central_widget = QWidget()
+        main_layout = QVBoxLayout(central_widget)
 
-        self.tableWidget = QTableWidget()
-        layout.addWidget(self.tableWidget)
+        # Создаем виджет для строки поиска и кнопки
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(self.search_label)
+        search_layout.addWidget(self.search_box)
+        search_layout.addWidget(self.search_button)
 
-        button1 = QPushButton('Показать таблицу 1')
-        button1.clicked.connect(self.show_table1)
-        layout.addWidget(button1)
+        main_layout.addLayout(search_layout)
 
-        button2 = QPushButton('Показать таблицу 2')
-        button2.clicked.connect(self.show_table2)
-        layout.addWidget(button2)
+        # Создаем виджет для списка заказов
+        main_layout.addWidget(self.order_list)
 
-        button3 = QPushButton('Показать таблицу 3')
-        button3.clicked.connect(self.show_table3)
-        layout.addWidget(button3)
+        # Создаем виджет для кнопок
+        buttons_layout = QVBoxLayout()
+        buttons_layout.addWidget(self.drivers_button)
+        buttons_layout.addWidget(self.orders_button)
+        buttons_layout.addWidget(self.history_button)
 
-        centralWidget = QWidget()
-        centralWidget.setLayout(layout)
-        self.setCentralWidget(centralWidget)
+        main_layout.addLayout(buttons_layout)
 
-    def show_table1(self):
-        self.show_table('Заказы')  # Замените 'table1_name' на имя вашей первой таблицы
+        # Устанавливаем главный виджет в окне
+        self.setCentralWidget(central_widget)
 
-    def show_table2(self):
-        self.show_table('Перевозчики')  # Замените 'table2_name' на имя вашей второй таблицы
+class DriversWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Список водителей")
 
-    def show_table3(self):
-        self.show_table('Тип_транспорта')  # Замените 'table3_name' на имя вашей третьей таблицы
+class OrdersWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Список заказов")
 
-    def show_table(self, table_name):
-        connection = sqlite3.connect(self.db_file)
-        cursor = connection.cursor()
+class HistoryWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("История заказов")
 
-        cursor.execute(f"PRAGMA table_info({table_name})")
-        columns = [col[1] for col in cursor.fetchall()]
-
-        cursor.execute(f"SELECT * FROM {table_name}")
-        data = cursor.fetchall()
-
-        self.tableWidget.setRowCount(len(data))
-        self.tableWidget.setColumnCount(len(columns))
-
-        self.tableWidget.setHorizontalHeaderLabels(columns)
-
-        for row, row_data in enumerate(data):
-            for col, col_data in enumerate(row_data):
-                item = QTableWidgetItem(str(col_data))
-                self.tableWidget.setItem(row, col, item)
-
-        self.tableWidget.resizeColumnsToContents()  # Автоматическое изменение размеров столбцов
-        connection.close()
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = DatabaseApp('Orders.db')  # Замените путь_к_вашей_базе_данных.db на путь к вашему файлу базы данных
-    window.show()
-    sys.exit(app.exec_())
+
+    # Создаем и отображаем главное окно
+    main_window = OrderWindow()
+    main_window.show()
+
+    # Создаем экземпляры окон для кнопок
+    drivers_window = DriversWindow()
+    orders_window = OrdersWindow()
+    history_window = HistoryWindow()
+
+    # Подключаем слоты к кнопкам
+    main_window.drivers_button.clicked.connect(drivers_window.show)
+    main_window.orders_button.clicked.connect(orders_window.show)
+    main_window.history_button.clicked.connect(history_window.show)
+
+    sys.exit(app.exec())
